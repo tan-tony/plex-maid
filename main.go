@@ -62,10 +62,10 @@ func scanAndUpdateLibrary(libraryID string, lock bool) {
 			name := obj.Title
 			log.Printf("Found %s on plex: %+v", name, obj)
 
-			if locked, err := isArtistLocked(obj.RatingKey); err != nil {
+			if skip, err := toSkipArtist(obj.RatingKey); err != nil {
 				log.Printf("Failed to determine if artist is locked: %s", err)
-			} else if locked {
-				log.Printf("%s is locked, skipping", name)
+			} else if skip {
+				log.Printf("skipping %s", name)
 				continue
 			}
 
@@ -102,7 +102,7 @@ func scanAndUpdateLibrary(libraryID string, lock bool) {
 	}
 }
 
-func isArtistLocked(id string) (bool, error) {
+func toSkipArtist(id string) (bool, error) {
 	// check if lock
 	artistContainer, err := pc.GetMetadata(id)
 	if err != nil {
@@ -114,10 +114,18 @@ func isArtistLocked(id string) (bool, error) {
 		return false, errors.New("Unexpected metadata length 0")
 	}
 
-	for _, field := range artistContainer.MediaContainer.Metadata[0].Field {
+	artistObj := artistContainer.MediaContainer.Metadata[0]
+
+	for _, field := range artistObj.Field {
+		// title is locked
 		if field.Name == "title" && field.Locked {
 			return true, nil
 		}
+	}
+
+	// incomplete metedata
+	if artistObj.UpdatedAt == 0 {
+		return true, nil
 	}
 
 	return false, nil

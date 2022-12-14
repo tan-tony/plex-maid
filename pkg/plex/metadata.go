@@ -12,8 +12,10 @@ type MetadataGetResponse struct {
 		Metadata []struct {
 			RatingKey string `json:"ratingKey"`
 			Title     string `json:"title"`
+			UpdatedAt int64  `json:"updatedAt"`
+			AddedAt   int64  `json:"addedAt"`
 			Similar   []struct {
-				// ID string `json:"id"`
+				ID  int    `json:"id"`
 				Tag string `json:"tag"`
 			} `json:"Similar"`
 			Field []struct {
