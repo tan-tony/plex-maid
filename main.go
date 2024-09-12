@@ -60,7 +60,7 @@ func scanAndUpdateLibrary(libraryID string, lock bool) {
 	for containers := range sectionsC {
 		for _, obj := range containers.MediaContainer.Metadata {
 			name := obj.Title
-			log.Printf("Found %s on plex: %+v", name, obj)
+			log.Printf("Found artist %s on plex: %+v", name, obj)
 
 			if skip, err := toSkipArtist(obj.RatingKey); err != nil {
 				log.Printf("Failed to determine if artist is locked: %s", err)
@@ -71,7 +71,7 @@ func scanAndUpdateLibrary(libraryID string, lock bool) {
 
 			artist, err := scrobbler.SearchArtist(ctx, name)
 			if err != nil {
-				log.Printf("Error while trying to search artist: %s", err)
+				log.Printf("Error while trying to search artist [%s]: %s", name, err)
 				continue
 			}
 			artist.ToSimplified()
@@ -102,6 +102,7 @@ func scanAndUpdateLibrary(libraryID string, lock bool) {
 	}
 }
 
+// determine if an artist should be skipped
 func toSkipArtist(id string) (bool, error) {
 	// check if lock
 	artistContainer, err := pc.GetMetadata(id)
